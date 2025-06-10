@@ -1,0 +1,119 @@
+@startuml Label_Validation_Simplified_Flow
+
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 14
+skinparam ArrowThickness 2.0
+skinparam ActivityBorderThickness 2.0
+skinparam NoteBackgroundColor #FFFFF0
+skinparam NoteBorderColor #999999
+skinparam BackgroundColor white
+skinparam Shadowing false
+skinparam RoundCorner 20
+skinparam ArrowColor #666666
+skinparam ActorBorderColor #666666
+skinparam BoundaryBorderColor #666666
+skinparam ControlBorderColor #666666
+skinparam DatabaseBorderColor #666666
+
+title How AILabelAssist Validates Your Label
+
+' Define the colors
+!define RED #FFAAAA
+!define ORANGE #FFDAAA
+!define GREEN #AAFFAA
+!define YELLOW #FFFFAA
+!define BLUE #AAAAFF
+
+actor "You" as User
+boundary "AILabelAssist Screen" as UI
+control "Validation System" as Validator
+database "Keywords List" as DB
+
+note right of User
+  <b>What is a valid label?</b>
+  A label like <b>RB_SenTemp_Ext</b> has:
+  
+  * <b>ID</b>: RB (company ID)
+  * <b>Physical part</b>: Sen (Sensor)
+  * <b>Description</b>: Temp (Temperature)
+  * <b>Extension</b>: Ext (optional)
+end note
+
+User -> UI: Type a label
+UI -> Validator: Check if label is valid
+
+group Step 1: Basic Format Check
+  Validator -> Validator: Check if label format looks right
+    alt Label format is wrong
+    Validator --> UI: "No Label" error
+    note right: Most critical error
+    UI --> User: Show error message
+  end
+end group
+
+group Step 2: Check Each Part of the Label
+  Validator -> Validator: Break label into parts
+    group "Check Physical Part"
+    Validator -> DB: Look up the physical part
+      alt Part not in the database
+      Validator --> UI: "Abbreviation not available"
+      note right: Cannot find this part
+    else Part exists but wrong type
+      Validator --> UI: "Physical part is missing"
+      note right: Found but not a physical component
+    end
+  end group
+  
+  group "Check Description Part" #FFFFF0    alt No description
+      Validator --> UI: "Description part is missing"
+      note right: Label needs a description
+    else Same word used twice
+      Validator --> UI: "Duplicate keywords used"
+      note right: Cannot use same word twice
+    else Word not in database
+      Validator --> UI: "Abbreviation not available"
+      note right: Cannot find this word
+    else Wrong type of word
+      Validator --> UI: "Description part is invalid"
+      note right: Wrong type of word used
+    end
+  end group
+  
+  group "Check Extension (if any)" #FFFFF0    alt Extension not in database
+      Validator --> UI: "Extension not available"
+      note right: Cannot find this extension
+    else Wrong type of extension
+      Validator --> UI: "Extension part is invalid"
+      note right: Not a valid extension type
+    end
+  end group
+  
+  group "Check Length" #FFFFF0    alt Label too long
+      Validator --> UI: "Label exceeds 27 characters"
+      note right: Label is too long
+    end
+  end group
+end group
+
+group Step 3: Show Results
+  Validator -> Validator: Sort errors by importance
+  
+  alt Any errors found
+    Validator --> UI: Show most important error first
+    UI --> User: Display error message and parts table
+  else No errors
+    Validator --> UI: Label is valid
+    UI --> User: Show green success message and parts table
+  end
+end group
+
+legend center
+  <b>Error Priority (most important to least important)</b>
+  1. No Label - Label format is completely wrong
+  2. Physical part issues - The main component is wrong
+  3. Description issues - The description has problems
+  4. Extension issues - The extension is incorrect
+  5. Length issue - Label is too long (over 27 characters)
+end legend
+
+@enduml

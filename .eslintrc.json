@@ -1,0 +1,12 @@
+{
+  "overrides": [
+    {
+      "files": ["src/KeywordSearch.tsx"],
+      "rules": {
+        "react/style-prop-object": "off",
+        "react/no-inline-styles": "off",
+        "@typescript-eslint/no-inline-styles": "off"
+      }
+    }
+  ]
+}

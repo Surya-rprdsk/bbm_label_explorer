@@ -1,0 +1,48 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Tauri build output
+src-tauri/target
+src-tauri/Cargo.lock
+src-tauri/WixTools
+.tauri
+
+# Keys (keep your private keys secret!)
+keys/private.key
+# Uncomment the next line if you don't want to check in the public key
+keys/public.key
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Generated Tauri binaries and bundles
+src-tauri/target/release/bundle/
+src-tauri/target/release/app/
+*.msi
+*.app
+*.app.tar.gz
+*.dmg
+*.deb
+*.AppImage
+
+# Tauri update artifacts
+latest.json

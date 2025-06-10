@@ -1,0 +1,129 @@
+@import '../../index.css';
+/* Place your component-specific styles below this line */
+.keyword-search-container {
+  padding: 24px;
+}
+
+.keyword-table {
+  margin-top: 16px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.keyword-table th, .keyword-table td {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.keyword-table th {
+  background: var(--table-header);
+}
+
+[data-theme="dark"] .row-valid td, [data-theme="dark"] .row-valid {
+  background-color: transparent !important;
+  color: var(--success) !important;
+}
+[data-theme="dark"] .row-invalid td, [data-theme="dark"] .row-invalid {
+  background-color: transparent !important;
+  color: var(--error) !important;
+}
+
+/* For light mode, keep the original background coloring */
+[data-theme="light"] .row-valid td, [data-theme="light"] .row-valid {
+  background-color: var(--row-valid) !important;
+  color: inherit !important;
+}
+[data-theme="light"] .row-invalid td, [data-theme="light"] .row-invalid {
+  background-color: var(--row-invalid) !important;
+  color: inherit !important;
+}
+
+.table-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.virtual-table-container {
+  height: 600px;
+  width: 100%;
+  overflow: auto;
+}
+
+.virtual-table-header {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.virtual-table-row {
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+}
+
+.autosar-check-btn {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 0;
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  color: var(--text);
+  cursor: pointer;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.autosar-check-btn:hover {
+  background: var(--button-hover);
+}
+
+.theme-toggle-fab {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 1000;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.theme-toggle-fab:hover {
+  background: var(--button-hover);
+}
+
+.info-iframe {
+  border: 0;
+  min-height: 400px;
+  width: 100%;
+  height: 100%;
+}
+
+.custom-app-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background: url('/tauri.svg') no-repeat center/contain;
+  margin-right: 8px;
+  vertical-align: middle;
+  /* Theme-adaptive filter for visibility */
+  filter: brightness(1.1);
+}
+[data-theme="dark"] .custom-app-icon {
+  filter: brightness(1.3) drop-shadow(0 0 2px #23243a);
+}
+[data-theme="light"] .custom-app-icon {
+  filter: none;
+}

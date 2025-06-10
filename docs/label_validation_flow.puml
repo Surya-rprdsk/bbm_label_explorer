@@ -1,0 +1,200 @@
+@startuml Label Validation Flow
+
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 12
+skinparam ArrowThickness 1.5
+skinparam ActorBorderThickness 1.5
+skinparam PartitionBorderThickness 1.5
+skinparam PackageBorderThickness 1.5
+skinparam ActivityBorderThickness 1.5
+skinparam ActivityDiamondBorderThickness 1.5
+skinparam NoteBackgroundColor #FFFFF0
+skinparam NoteBorderColor #999999
+
+title AILabelAssist Label Validation Process Flow
+
+' Define the colors
+!define RED #FFAAAA
+!define ORANGE #FFDAAA
+!define GREEN #AAFFAA
+!define BLUE #AAAAFF
+!define YELLOW #FFFFAA
+!define PURPLE #FFAAFF
+!define GRAY #EEEEEE
+
+start
+
+:User inputs a label string;
+
+partition "Initial Label Eligibility Check" {
+  :Remove leading/trailing non-alphanumeric characters;
+  note right: trimmedLabel = labelInput.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '')
+
+  :Remove all special characters except underscore;
+  note right: cleanedLabel = trimmedLabel.replace(/[^A-Za-z0-9_]/g, '')
+
+  if (Valid after trimming and cleaning?) then (yes)
+    if (Parts <= 3 AND starts with uppercase?) then (yes)
+      :Label is eligible for further validation;
+    else (no)
+      :Label is invalid;
+      note right YELLOW: Error: "No Label"
+      stop
+    endif
+  else (no)
+    :Label is invalid;
+    note right YELLOW: Error: "No Label"
+    stop
+  endif
+}
+
+partition "Label Parsing" {
+  :Split label using regex pattern;
+  note right: Regex: /^([A-Za-z0-9]+)_([a-zA-z][a-z0-9]*)([A-Za-z0-9]*)(?:_([A-Za-z0-9]+))?$/
+  
+  :Extract components: id, pp, descriptivePart, ex;
+  
+  :Process descriptive part to extract camelCase components;
+  note right: Extract using /[A-Z][a-z0-9]*/g
+  
+  :Build final keywords list including pp and descriptive components;
+}
+
+partition "Validate Label Parts" {
+  :Initialize errors array;
+  :Create empty labelRows array;
+  
+  ' ID Section
+  :Add ID row to labelRows;
+  note right: ID is always added without validation
+  
+  ' PP Section
+  if (pp exists?) then (yes)
+    :Search for pp in keywords database;
+    if (pp found in database?) then (yes)
+      if (pp has Physical classification?) then (yes)
+        :pp is valid;
+      else (no)
+        :Add error: "Physical part <pp> is missing";
+        note right RED: Error priority: 3
+      endif
+    else (no)
+      :Add error: "Abbreviation of <pp> not available";
+      note right RED: Error priority: 2
+    endif
+    :Add pp row to labelRows;
+  else (no)
+    ' No pp validation needed
+  endif
+  
+  ' Descriptive Parts Section
+  :Get descriptive parts (all parts after pp);
+  
+  if (descriptive parts exist?) then (yes)
+    :Track seen keywords to detect duplicates;
+    
+    :Process each descriptive part;
+    while (more descriptive parts?) is (yes)
+      :Get next part;
+      
+      if (part already seen?) then (yes)
+        :Add error: "Duplicate keywords used";
+        note right RED: Error priority: 5
+      endif
+      
+      :Add part to seen keywords;
+      
+      :Search for part in keywords database;
+      if (part found in database?) then (yes)
+        if (part is Extension or Physical?) then (yes)
+          :Add error: "DescriptiveName part <dd> is invalid";
+          note right RED: Error priority: 7
+        else (no)
+          :Descriptive part is valid;
+        endif
+      else (no)
+        :Add error: "Abbreviation of <dd> not available";
+        note right RED: Error priority: 6
+      endif
+      
+      :Add part row to labelRows;
+    endwhile
+  else (no)
+    :Add error: "DescriptiveName part <dd> is missing";
+    note right RED: Error priority: 4
+  endif
+  
+  ' Extension Section
+  if (ex exists?) then (yes)
+    :Search for ex in keywords database;
+    if (ex found in database?) then (yes)
+      if (ex has Extension classification?) then (yes)
+        :Extension is valid;
+      else (no)
+        :Add error: "Extension part <Ex> is invalid";
+        note right RED: Error priority: 9
+      endif
+    else (no)
+      :Add error: "Extension <Ex> not available";
+      note right RED: Error priority: 8
+    endif
+    :Add ex row to labelRows;
+  else (no)
+    ' No ex validation needed
+  endif
+  
+  ' Length Check
+  if (label length > 27 characters?) then (yes)
+    :Add error: "Label exceeds 27 characters";
+    note right RED: Error priority: 10
+  else (no)
+    ' Label length is valid
+  endif
+}
+
+partition "Process Validation Results" {
+  :Get unique errors and sort by priority;
+  note right: Errors sorted by ERROR_RANK array
+  
+  :Create consolidatedMessages array;
+  
+  if (any errors?) then (yes)
+    :Take highest priority error as primary message;
+    :Set color to 'red';
+  else (no)
+    :No validation errors;
+    :Set empty message and color;
+  endif
+  
+  :Return validation results:
+   - rows (labelRows)
+   - message (primary message)
+   - color (message color)
+   - consolidatedMessages (all messages);
+}
+
+partition "Display in ResultTable Component" {
+  :Determine if displaying search or label mode;
+  
+  if (label mode active?) then (yes)
+    :Display label validation results;
+    if (labelData messages exist?) then (yes)
+      :Show all messages with appropriate colors;
+    endif
+    
+    if (label data rows exist?) then (yes)
+      :Paginate and display rows in table;
+      if (more than 5 rows?) then (yes)
+        :Show pagination controls;
+      endif
+    else (no)
+      :Show empty state message;
+    endif
+  else (no)
+    :Display search results instead;
+  endif
+}
+
+stop
+
+@enduml

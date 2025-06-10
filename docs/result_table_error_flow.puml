@@ -1,0 +1,93 @@
+@startuml ResultTable_Error_Flow
+
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 12
+skinparam ArrowThickness 1.5
+skinparam ActivityBorderThickness 1.5
+skinparam NoteBackgroundColor #FFFFF0
+skinparam NoteBorderColor #999999
+skinparam BackgroundColor white
+
+title AILabelAssist ResultTable Component - Error Display Flow
+
+' Define the colors
+!define RED #FFAAAA
+!define ORANGE #FFDAAA
+!define GREEN #AAFFAA
+!define YELLOW #FFFFAA
+!define BLUE #AAAAFF
+!define GRAY #EEEEEE
+
+participant "User" as User
+participant "KeywordSearch\nComponent" as KS
+participant "ResultTable\nComponent" as RT
+participant "Validation\nLogic" as VL
+database "Keywords\nDatabase" as DB
+
+== Input Phase ==
+
+User -> KS: Enter text in label input field
+KS -> RT: Set activeInput = 'label'
+note right: Tracks which input is active
+User -> KS: Enter label (e.g., "RB_SenTemp_Ext")
+KS -> VL: Validate label
+VL -> DB: Lookup components
+VL -> KS: Return validation results
+note right
+  Returns:
+  - rows (label components)
+  - message (primary error)
+  - color (error color)
+  - consolidatedMessages (all errors)
+end note
+
+== Display Phase ==
+
+KS -> RT: Pass labelData with validation results
+RT -> RT: Display table with label components
+note right
+  - Each row shows a label component
+  - Displays: abbrName, classification, 
+    longNameEn, longNameDe, domainName
+  - Highlights invalid components
+end note
+
+alt Valid Label
+  RT --> User: Display green success message
+  RT --> User: Show all label components in table
+else Invalid Label - Structural Error
+  RT --> User: Display "No Label" error in yellow
+  RT --> User: Hide table (no rows to display)
+else Invalid Label - Component Error
+  RT --> User: Display primary error message in red
+  RT --> User: Show components in table with issues highlighted
+end alt
+
+== Pagination (More than 5 rows) ==
+
+alt More than 5 rows
+  RT -> RT: Enable pagination (5 rows per page)
+  User -> RT: Click pagination controls
+  RT -> RT: Update page without losing activeInput
+  RT --> User: Display new page of results
+end alt
+
+== Clicking Outside ==
+
+User -> KS: Click outside input fields
+KS -> RT: Set activeInput = null
+RT -> RT: Use lastActiveInputRef to preserve display
+note right
+  const effectiveInput = activeInput || lastActiveInputRef.current;
+  This ensures table content doesn't disappear
+end note
+RT --> User: Continue displaying same content
+
+== Mode Switching ==
+
+User -> KS: Switch from label to search input
+KS -> RT: Set activeInput = 'search'
+RT -> RT: Change display mode
+RT --> User: Show search results instead of label validation
+
+@enduml

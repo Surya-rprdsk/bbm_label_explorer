@@ -1,0 +1,107 @@
+@startuml ResultTable_Error_Display
+
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 12
+skinparam BackgroundColor white
+skinparam NoteBackgroundColor #FFFFF0
+skinparam NoteBorderColor #999999
+skinparam ClassBackgroundColor #FEFEFE
+skinparam ClassBorderColor #999999
+
+title AILabelAssist ResultTable - Error Display Structure
+
+' Define the colors
+!define RED #FFAAAA
+!define ORANGE #FFDAAA
+!define GREEN #AAFFAA
+!define YELLOW #FFFFAA
+!define BLUE #AAAAFF
+!define GRAY #EEEEEE
+
+package "KeywordSearch Component" {
+  class KeywordSearch {
+    - labelInputRef: React.RefObject
+    - searchInputRef: React.RefObject
+    - labelData: LabelValidationResult
+    - activeInput: 'label' | 'search' | null
+    + handleInputFocus()
+    + handleLabelInputChange()
+    + handleSearchInputChange()
+  }
+  
+  class "Validation Logic" as VL {
+    + getLabelRows(labelInput, keywords)
+    + validateSearch(search)
+  }
+}
+
+package "ResultTable Component" {
+  class ResultTable {
+    - activeInput: 'label' | 'search' | null
+    - lastActiveInputRef: React.useRef
+    - page: number
+    - rowsPerPage: number = 5
+    - displayedRows: any[]
+    + getModeText()
+    + getEmptyMessage()
+    + handlePageChange()
+    + render()
+  }
+  
+  class "TableComponents" as TC {
+    + TableContainer
+    + Table
+    + TableHead
+    + TableBody
+    + TableRow
+    + TableCell
+    + Pagination
+  }
+}
+
+class "ErrorDisplay" as ED {
+  + message: string
+  + color: string
+  + consolidatedMessages: Array<{text: string, color: string}>
+}
+
+KeywordSearch --> ResultTable : passes props\n(activeInput, labelData, data)
+KeywordSearch --> VL : uses
+VL --> ED : generates
+ResultTable --> TC : uses
+ED --> ResultTable : displayed in
+
+note right of KeywordSearch
+  Manages active input state and 
+  validation triggers
+end note
+
+note right of ResultTable
+  1. Maintains pagination state
+  2. Preserves last active input
+  3. Determines which data to display
+  4. Renders error messages
+end note
+
+note right of ED
+  Error Message Structure:
+  - Primary message with color (red/yellow)
+  - All messages in consolidatedMessages
+  - Displayed at the top of ResultTable
+end note
+
+note bottom of VL
+  Error Priority Order:
+  1. No Label (yellow)
+  2. Abbreviation of <pp> not available (red)
+  3. Physical part <pp> is missing (red)
+  4. DescriptiveName part <dd> is missing (red)
+  5. Duplicate keywords used (red)
+  6. Abbreviation of <dd> not available (red)
+  7. DescriptiveName part <dd> is invalid (red)
+  8. Extension <Ex> not available (red)
+  9. Extension part <Ex> is invalid (red)
+  10. Label exceeds 27 characters (red)
+end note
+
+@enduml

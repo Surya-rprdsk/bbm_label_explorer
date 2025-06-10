@@ -1,0 +1,169 @@
+/* Basic global styles for the app */
+:root {
+  --background: #fff;
+  --text: #222;
+  --surface: #f3f3f3;
+  --surface-alt: #f7f7f7;
+  --border: #d3d3d3;
+  --sidebar: #f7f7f7;
+  --sidebar-text: #444;
+  --button-bg: #e6e6e6;
+  --button-hover: #d3d3d3;
+  --button-border: #c0c0c0;
+  --success: #1b8a3a;
+  --error: #b71c1c;
+  --table-header: #f0f0f0;
+  --row-valid: #d4edda;
+  --row-invalid: #f8d7da;
+}
+
+[data-theme="dark"] {
+  --background: #181a1b;
+  --text: #eee;
+  --surface: #23272b;
+  --surface-alt: #23272b;
+  --border: #333;
+  --sidebar: #23272b;
+  --sidebar-text: #bbb;
+  --button-bg: #23272b;
+  --button-hover: #23272b;
+  --button-border: #333;
+  --success: #3ecf8e;
+  --error: #ff5c5c;
+  --table-header: #23272b;
+  --row-valid: #22332a;
+  --row-invalid: #332223;
+}
+
+[data-theme="light"] {
+  --background: #fff;
+  --text: #222;
+  --surface: #f3f3f3;
+  --surface-alt: #f7f7f7;
+  --border: #d3d3d3;
+  --sidebar: #f7f7f7;
+  --sidebar-text: #444;
+  --button-bg: #e6e6e6;
+  --button-hover: #d3d3d3;
+  --button-border: #c0c0c0;
+  --success: #1b8a3a;
+  --error: #b71c1c;
+  --table-header: #f0f0f0;
+  --row-valid: #d4edda;
+  --row-invalid: #f8d7da;
+}
+
+body, .settings-root, .MuiPaper-root {
+  background: var(--background) !important;
+  color: var(--text) !important;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f9f9f9;
+  color: #222;
+  overflow: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Add a floating icon button for theme switch in the main menu */
+.theme-switch-btn {
+  position: fixed;
+  top: 20px;
+  right: 28px;
+  z-index: 2000; /* Increased to ensure always on top */
+  background: var(--button-bg);
+  color: var(--text);
+  border: 1px solid var(--button-border);
+  border-radius: 50%;
+  width: 42px; /* Slightly larger for easier tap */
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  font-size: 1.3rem;
+}
+.theme-switch-btn:hover {
+  background: var(--button-hover);
+  color: #4ea1f7;
+}
+
+/* Responsive: move icon closer to edge on small screens */
+@media (max-width: 600px) {
+  .theme-switch-btn {
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* Push label input further down in main menu to avoid overlap with floating icon */
+.keyword-search-container > .MuiBox-root:first-child {
+  margin-top: 64px;
+}
+
+/* Settings menu font and input consistency */
+.settings-root, .settings-root input, .settings-root select, .settings-root button, .settings-root table, .settings-root th, .settings-root td {
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  box-sizing: border-box;
+}
+.settings-root input, .settings-root select, .settings-root button {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 6px;
+}
+.settings-root table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+.settings-root th, .settings-root td {
+  padding: 8px 12px;
+}
+
+/* Fixed top-right position for dark mode icon */
+.fixed-top-right {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  z-index: 2000;
+}
+
+/* Layout for settings menu */
+.settings-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar space in settings menu */
+.settings-sidebar-space {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+}
+
+/* Main space in settings menu */
+.settings-main-space {
+  flex: 1;
+  min-width: 320px;
+  width: 100%;
+}
+
