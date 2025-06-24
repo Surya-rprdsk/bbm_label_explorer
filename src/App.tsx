@@ -2,61 +2,32 @@ import { useState, useEffect, useMemo } from 'react';
 import { KeywordSearch, Settings, SplashScreen } from './components';
 import './components/KeywordSearch/KeywordSearch.css';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { AppProvider } from './context/AppContext';
+import { ResponsiveProvider } from './context/ResponsiveContext';
+import { useTheme } from './hooks';
 
-function getSystemTheme() {
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return 'light';
-}
-
-function useMaterialTheme(): [object, string, (theme: string) => void] {
-  const [themeMode, setThemeMode] = useState(() => {
-    const stored = localStorage.getItem('settings_theme');
-    if (stored === 'system' || !stored) return getSystemTheme();
-    return stored;
-  });
-
-  useEffect(() => {
-    function handleStorage(e: StorageEvent) {
-      if (e.key === 'settings_theme') {
-        const newTheme = e.newValue === 'system' ? getSystemTheme() : e.newValue;
-        setThemeMode(newTheme || 'light');
-      }
-    }
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('settings_theme');
-    if (stored === 'system' || !stored) {
-      setThemeMode(getSystemTheme());
-    } else {
-      setThemeMode(stored);
-    }
-  }, [localStorage.getItem('settings_theme')]);
-
-  const theme = useMemo(() => createTheme({
-    palette: {
-      mode: themeMode === 'dark' ? 'dark' : 'light',
-    },
-  }), [themeMode]);
-
-  return [theme, themeMode, (t: string) => {
-    localStorage.setItem('settings_theme', t);
-    setThemeMode(t === 'system' ? getSystemTheme() : t);
-  }];
-}
-
-export default function App() {
-  const [theme, themeMode, setThemeMode] = useMaterialTheme();
+function ThemedApp() {
+  // Use our custom theme hook
+  const { themeMode } = useTheme();
+  
   const isSplashWindow = window.location.hash === '#splash';
   const isSettingsWindow = window.location.pathname.endsWith('/settings.html');
   const [showSplash, setShowSplash] = useState(isSplashWindow);
 
+  // Create theme based on current mode
+  const theme = useMemo(() => createTheme({
+    palette: {
+      mode: themeMode === 'dark' ? 'dark' : 'light',
+    },
+    typography: {
+      fontFamily: 'Arial, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif',
+      fontSize: 14,
+      button: {
+        textTransform: 'none',
+        fontWeight: 500,
+      },
+    },
+  }), [themeMode]);
   useEffect(() => {
     if (!isSplashWindow) return;
     // Listen for the Tauri event to hide splash when loading is done
@@ -70,35 +41,16 @@ export default function App() {
       });
     }
   }, [isSplashWindow]);
-
+  
+  // Empty useEffect to replace the old window resizing code
   useEffect(() => {
-    // Set data-theme attribute for dark/light mode, except splash screen
-    if (!isSplashWindow) {
-      document.body.setAttribute('data-theme', themeMode === 'dark' ? 'dark' : 'light');
-    } else {
-      document.body.removeAttribute('data-theme');
-    }
-  }, [themeMode, isSplashWindow]);
-
-  // Theme switch button handler
-  const handleThemeSwitch = () => {
-    setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
-  };
+    // No need for direct DOM manipulation - ResponsiveContext handles window resizing
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {/* Floating theme switch button, only show in main menu */}
-      {!isSplashWindow && !isSettingsWindow && (
-        <button
-          className="theme-switch-btn fixed-top-right"
-          onClick={handleThemeSwitch}
-          title={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {themeMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-        </button>
-      )}
-      {/* Dedicated space for settings menu */}
+      {/* Dedicated space for settings menu, now with theme switch */}
       {isSettingsWindow && (
         <Settings />
       )}
@@ -107,5 +59,15 @@ export default function App() {
         !isSettingsWindow ? <KeywordSearch /> : null
       }
     </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <ResponsiveProvider>
+        <ThemedApp />
+      </ResponsiveProvider>
+    </AppProvider>
   );
 }

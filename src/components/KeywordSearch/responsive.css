@@ -1,0 +1,173 @@
+/* Responsive styles for KeywordSearch component */
+
+/* Base container responsiveness */
+.responsive-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Handle window resizing */
+@media screen and (min-width: 450px) {
+  .table-cell-resizable {
+    width: 20%;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .table-cell-resizable {
+    width: 20%;
+  }
+}
+
+/* Root variables for responsive design */
+:root {
+  --table-max-height: calc(100vh - 180px); /* Increased padding to prevent overflow */
+  --table-row-height: 18px;
+  --table-min-rows: 5;
+  --title-bar-height: 30px;
+  --window-height: 100vh; /* Default, will be updated via JS */
+}
+
+/* Fix for table layout issues */
+.MuiTableContainer-root {
+  display: flex;
+  flex-direction: column;
+  height: auto !important;
+  max-height: none !important; /* Remove max-height to prevent scrollbar */
+  overflow-y: visible !important; /* Disable scrollbar */
+  overflow-x: hidden !important;
+  transition: max-height 0.3s ease;
+  flex: 1;
+  position: relative;
+}
+
+/* Responsive table heights for different window sizes */
+@media screen and (max-height: 450px) {
+  .MuiTableContainer-root {
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media screen and (min-height: 451px) and (max-height: 600px) {
+  .MuiTableContainer-root {
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media screen and (min-height: 601px) and (max-height: 900px) {
+  .MuiTableContainer-root {
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media screen and (min-height: 901px) {
+  .MuiTableContainer-root {
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+.MuiTable-root {
+  table-layout: fixed !important;
+}
+
+/* Table row and cell size fixes */
+.MuiTableRow-root {
+  height: 18px !important;
+  max-height: 18px !important;
+}
+
+.MuiTableCell-root {
+  padding: 1px 2px !important;
+  height: 18px !important;
+  max-height: 18px !important;
+  line-height: 14px !important;
+  font-size: 0.7rem !important;
+}
+
+.MuiTableHead-root .MuiTableRow-root {
+  height: 20px !important;
+  max-height: 20px !important;
+}
+
+/* Ensure form inputs resize properly */
+.form-container {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+/* Input field size adjustments */
+.MuiInputBase-root {
+  height: 28px !important;
+  min-height: 28px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.MuiInputLabel-root {
+  font-size: 0.7rem !important;
+  line-height: 1 !important;
+  transform: translate(6px, 10px) scale(1) !important;
+}
+
+.MuiInputLabel-shrink {
+  transform: translate(6px, -6px) scale(0.75) !important;
+}
+
+/* Ensure consistent main content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* Title bar styling */
+.title-bar {
+  height: var(--title-bar-height) !important;
+  min-height: var(--title-bar-height) !important;
+  max-height: var(--title-bar-height) !important;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.title-text {
+  font-size: 15px !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* No scrollbar for results table */
+.results-table-container {
+  width: 100% !important;
+  height: auto !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  max-height: none !important;
+  min-height: 100px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Fix for table scrollbar issues when maximized */
+.results-table-container {
+  width: 100% !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: var(--table-max-height) !important;
+  min-height: 100px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}

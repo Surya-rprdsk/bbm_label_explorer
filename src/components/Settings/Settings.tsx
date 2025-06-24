@@ -1,61 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { tryCatch } from '../index';
-import { Box, TextField, Button, Typography, Paper, List, ListItemIcon, ListItemButton, ListItem, Checkbox, FormControlLabel, ListItemText } from '@mui/material';
+import tryCatch from '../index';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  List,
+  ListItemIcon,
+  ListItemButton,
+  ListItem,
+  Checkbox,
+  FormControlLabel,
+  ListItemText,
+  Drawer,
+  AppBar,
+  Toolbar,
+  CssBaseline,
+  useTheme as useMuiTheme,
+  Link
+} from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InfoIcon from '@mui/icons-material/Info';
-import UpdateIcon from '@mui/icons-material/Update';
 import LinkIcon from '@mui/icons-material/Link';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import CloseIcon from '@mui/icons-material/Close';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { Window } from '@tauri-apps/api/window';
+// Import custom hooks
+import { useTheme } from '../../hooks';
 
 // Import from modular files
 import { ToolBehaviorSettings } from './types';
 import { defaultToolBehavior } from './constants';
-import { 
-  getApiUrl, 
-  saveApiUrl, 
-  getToolBehavior, 
+import {
+  getApiUrl,
+  saveApiUrl,
+  getToolBehavior,
   saveToolBehavior
 } from './utils';
 
 const SIDEBAR_ITEMS = [
-  { key: 'urls', label: 'Endpoints', icon: <LinkIcon /> },
-  { key: 'tool', label: 'Tool Behaviour', icon: <SettingsIcon /> },
-  { key: 'update', label: 'Update', icon: <UpdateIcon /> },
-  { key: 'about', label: 'About', icon: <InfoIcon /> },
+  { key: 'tool', icon: <SettingsIcon />, label: 'Tool' },
+  { key: 'urls', icon: <LinkIcon />, label: 'URLs' },
+  { key: 'about', icon: <InfoIcon />, label: 'About' },
 ];
 
-const Settings: React.FC = () => {
+interface SettingsProps {}
+
+const Settings: React.FC<SettingsProps> = () => {
+  // Use the custom theme hook instead of context
+  const { themeMode, setThemeMode } = useTheme();
+  const muiTheme = useMuiTheme();
   const [apiUrl, setApiUrl] = useState('');
   const [apiUrl2, setApiUrl2] = useState('');
-  const [apiUrl3, setApiUrl3] = useState('');
-  const [apiUrl4, setApiUrl4] = useState('');
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toolBehavior, setToolBehavior] = useState<ToolBehaviorSettings>(defaultToolBehavior);
-  const [activeSection, setActiveSection] = useState('urls');
-  const [updateStatus, setUpdateStatus] = useState<string>('');
-  const [checkingUpdate, setCheckingUpdate] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState('tool');
 
-  const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    Window.getCurrent().close();
+  }; 
+  
   useEffect(() => {
     setApiUrl(getApiUrl());
     setToolBehavior(getToolBehavior());
     // Load additional URLs from localStorage if present
     setApiUrl2(localStorage.getItem('settings_api_url_2') || '');
-    setApiUrl3(localStorage.getItem('settings_api_url_3') || '');
-    setApiUrl4(localStorage.getItem('settings_api_url_4') || '');
   }, []);
-
+  
   const handleSave = () => {
     tryCatch(() => {
       if (!apiUrl) throw new Error('Primary API URL cannot be empty');
       saveApiUrl(apiUrl);
       localStorage.setItem('settings_api_url_2', apiUrl2);
-      localStorage.setItem('settings_api_url_3', apiUrl3);
-      localStorage.setItem('settings_api_url_4', apiUrl4);
       setSaved(true);
       setError(null);
       setTimeout(() => setSaved(false), 1200);
@@ -68,241 +92,685 @@ const Settings: React.FC = () => {
     saveToolBehavior(updated);
   };
 
-  const handleCheckUpdate = async () => {
-    setCheckingUpdate(true);
-    setUpdateStatus('Checking for updates...');
-    try {
-      if ((window as any).__TAURI__ && (window as any).__TAURI__.plugin) {
-        await (window as any).__TAURI__.plugin.invoke('plugin:updater|check');
-        setUpdateStatus('If an update is available, the updater dialog will appear.');
-      } else {
-        setUpdateStatus('Updater not available in this environment.');
-      }
-    } catch (e) {
-      setUpdateStatus('Failed to check for updates.');
-    }
-    setCheckingUpdate(false);
-  };
-
   return (
-    <Box
-      className="settings-root sidebar-layout settings-compact"
-      sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: isSmall ? 'column' : 'row', md: 'row' },
-        width: '100vw',
-        minHeight: '100vh',
-        background: 'background.default',
-        borderRadius: 0,
-        boxShadow: 'none',
-        overflow: 'hidden',
-        '@media (max-width:600px)': {
-          minWidth: 320,
-          minHeight: 320,
-          width: 1,
-          height: 1,
-        },
-      }}
-    >
-      <Paper
-        elevation={2}
-        className="settings-sidebar"
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
         sx={{
-          width: { xs: '100%', sm: isSmall ? '100%' : 70, md: 70 },
-          minWidth: { xs: 0, sm: 56 },
-          maxWidth: { xs: '100%', sm: 120, md: 180, lg: 220 },
-          height: { xs: 48, sm: '100vh' },
-          background: 'background.paper',
-          color: 'text.primary',
-          borderRight: { xs: 0, sm: 1 },
-          borderBottom: { xs: 1, sm: 0 },
-          borderColor: 'divider',
-          p: 0,
-          display: 'flex',
-          flexDirection: { xs: 'row', sm: isSmall ? 'row' : 'column' },
-          alignItems: { xs: 'center', sm: isSmall ? 'center' : 'stretch' },
-          alignContent: 'center',
-          justifyContent: { xs: 'center', sm: isSmall ? 'center' : 'flex-start' },
-          transition: 'width 0.2s',
-          boxSizing: 'border-box',
-          flexShrink: 0,
-          zIndex: 2,
+          zIndex: 1200,
+          height: 36,
+          WebkitAppRegion: 'drag',
+          userSelect: 'none',
+          background: themeMode === 'dark'
+            ? 'linear-gradient(180deg, rgba(40,44,52,0.95) 0%, rgba(33,37,43,0.95) 100%)'
+            : 'linear-gradient(180deg, rgba(240,242,245,0.98) 0%, rgba(228,232,235,0.98) 100%)',
+          boxShadow: 'none',
+          borderBottom: `1px solid ${themeMode === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.1)'}`,
+          backdropFilter: 'blur(2px)'
         }}
       >
-        <List dense sx={{ p: 0, display: 'flex', flexDirection: { xs: 'row', sm: isSmall ? 'row' : 'column' }, width: '100%', height: '100%' }}>
-          {SIDEBAR_ITEMS.map(item => (
-            <ListItemButton
-              key={item.key}
-              selected={activeSection === item.key}
-              onClick={() => setActiveSection(item.key)}
+        <Toolbar
+          sx={{
+            justifyContent: 'space-between',
+            minHeight: 36,
+            px: 1
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <MenuBookIcon
+              sx={{ fontSize: 20, color: themeMode === 'dark' ? '#c5cae9' : '#3f51b5' }}
+            />
+            <Typography
+              sx={{ fontSize: 13, fontWeight: 500, color: themeMode === 'dark' ? '#c5cae9' : '#3f51b5', lineHeight: 1, fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif' }}
+            >
+              Settings
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: 0,
+              WebkitAppRegion: 'no-drag'
+            }}
+          >
+            <Box
               sx={{
-                minHeight: { xs: 36, sm: 36 },
-                px: { xs: 0.5, sm: 1, md: 2 },
-                flex: { xs: 1, sm: isSmall ? 1 : undefined },
+                width: 34,
+                height: 34,
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                borderBottom: { xs: activeSection === item.key ? `2px solid ${theme.palette.primary.main}` : undefined, sm: undefined },
-                borderRight: { xs: undefined, sm: !isSmall && activeSection === item.key ? `2px solid ${theme.palette.primary.main}` : undefined },
-                borderRadius: 0,
-                fontSize: { xs: '0.85em', sm: '0.9em', md: '1em' },
+                '&:hover': {
+                  backgroundColor: themeMode === 'dark' ? 'rgba(211, 47, 47, 0.15)' : 'rgba(211, 47, 47, 0.08)'
+                },
+                transition: 'background-color 0.2s'
               }}
             >
-              <ListItemIcon sx={{ minWidth: 28, justifyContent: 'center', color: activeSection === item.key ? 'primary.main' : 'inherit' }}>{item.icon}</ListItemIcon>
-            </ListItemButton>
-          ))}
-        </List>
-      </Paper>
-      <Paper
-        elevation={2}
-        className="settings-paper"
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          background: 'background.default',
-          p: { xs: 1, sm: 2, md: 3 },
-          overflowY: 'auto',
-          borderRadius: 0,
-          boxShadow: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          boxSizing: 'border-box',
-          height: { xs: 'calc(100vh - 48px)', sm: '100vh' },
-          fontSize: { xs: '0.85em', sm: '0.95em', md: '1em' },
-        }}
-      >
-        <Typography variant="h6" sx={{ fontSize: { xs: '1em', sm: '1.1em' }, mb: 1, textAlign: isSmall ? 'center' : 'left' }}>Settings</Typography>
-        {activeSection === 'urls' && (
-          <Box sx={{ width: '100%' }}>
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.95em', sm: '1em' }, mb: 1 }}>API URLs</Typography>
-              <TextField
-                label="Primary API URL"
-                value={apiUrl}
-                onChange={e => setApiUrl(e.target.value)}
-                fullWidth
-                size="small"
-                InputProps={{ autoComplete: 'off', autoSave: 'off', autoCorrect: 'off', spellCheck: false, sx: { fontSize: { xs: '0.85em', sm: '0.95em' }, py: 0.5 } }}
-                sx={{ mb: 1, fontSize: { xs: '0.85em', sm: '0.95em' } }}
-                helperText="Main endpoint for your API requests."
-                FormHelperTextProps={{ sx: { fontSize: { xs: '0.75em', sm: '0.85em' } } }}
+              <CloseIcon
+                onClick={handleClose}
+                sx={{
+                  cursor: 'pointer',
+                  fontSize: 18,
+                  color: themeMode === 'dark' ? '#e57373' : '#d32f2f',
+                  '&:hover': { color: muiTheme.palette.error.main },
+                  transition: 'color 0.2s'
+                }}
+                titleAccess="Close"
               />
-              <TextField
-                label="Secondary API URL"
-                value={apiUrl2}
-                onChange={e => setApiUrl2(e.target.value)}
-                fullWidth
-                size="small"
-                InputProps={{ autoComplete: 'off', autoSave: 'off', autoCorrect: 'off', spellCheck: false, sx: { fontSize: { xs: '0.85em', sm: '0.95em' }, py: 0.5 } }}
-                sx={{ mb: 1, fontSize: { xs: '0.85em', sm: '0.95em' } }}
-                helperText="Backup or alternative endpoint."
-                FormHelperTextProps={{ sx: { fontSize: { xs: '0.75em', sm: '0.85em' } } }}
-              />
-              <TextField
-                label="Tertiary API URL"
-                value={apiUrl3}
-                onChange={e => setApiUrl3(e.target.value)}
-                fullWidth
-                size="small"
-                InputProps={{ autoComplete: 'off', autoSave: 'off', autoCorrect: 'off', spellCheck: false, sx: { fontSize: { xs: '0.85em', sm: '0.95em' }, py: 0.5 } }}
-                sx={{ mb: 1, fontSize: { xs: '0.85em', sm: '0.95em' } }}
-                helperText="Optional: for testing or staging."
-                FormHelperTextProps={{ sx: { fontSize: { xs: '0.75em', sm: '0.85em' } } }}
-              />
-              <TextField
-                label="Quaternary API URL"
-                value={apiUrl4}
-                onChange={e => setApiUrl4(e.target.value)}
-                fullWidth
-                size="small"
-                InputProps={{ autoComplete: 'off', autoSave: 'off', autoCorrect: 'off', spellCheck: false, sx: { fontSize: { xs: '0.85em', sm: '0.95em' }, py: 0.5 } }}
-                sx={{ mb: 1, fontSize: { xs: '0.85em', sm: '0.95em' } }}
-                helperText="Optional: for any other endpoint."
-                FormHelperTextProps={{ sx: { fontSize: { xs: '0.75em', sm: '0.85em' } } }}
-              />
-              <Box sx={{ mt: 2, mb: 1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.85em', sm: '0.95em' } }}>Useful Links</Typography>
-                <List dense sx={{ fontSize: { xs: '0.85em', sm: '0.95em' }, pl: 2, m: 0 }}>
-                  <ListItem disablePadding>
-                    <ListItemText primary={<a href="https://docs.example.com" target="_blank" rel="noopener noreferrer">API Documentation</a>} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemText primary={<a href="https://status.example.com" target="_blank" rel="noopener noreferrer">API Status Page</a>} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemText primary={<a href="https://support.example.com" target="_blank" rel="noopener noreferrer">Support Portal</a>} />
-                  </ListItem>
-                </List>
-              </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleSave}
-                sx={{ fontSize: { xs: '0.85em', sm: '0.95em' }, minHeight: 32, py: 0.5 }}
-              >
-                Save
-              </Button>
-              {saved && <Typography sx={{ fontSize: { xs: '0.75em', sm: '0.85em' }, mt: 0.5 }}>Saved!</Typography>}
-              {error && <Typography sx={{ fontSize: { xs: '0.75em', sm: '0.85em' }, mt: 0.5 }}>{error}</Typography>}
             </Box>
           </Box>
-        )}
-        {activeSection === 'tool' && (
-          <Box sx={{ width: '100%' }}>
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.95em', sm: '1em' }, mb: 1 }}>Tool Behaviour</Typography>
-              <Box sx={{ fontSize: { xs: '0.85em', sm: '0.95em' }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' }, gap: 2 }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={toolBehavior.autoDisappear}
-                      onChange={e => handleToolBehaviorChange('autoDisappear', e.target.checked)}
-                      sx={{ width: 18, height: 18, p: 0.5 }}
-                    />
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 80,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: 80,
+            top: 36,
+            height: 'calc(100% - 36px)',
+            borderRight: 0,
+            background: themeMode === 'dark'
+              ? '#22252a'
+              : '#f5f6f7',
+            boxShadow: 'inset -1px 0 0 rgba(0, 0, 0, 0.08)'
+          },
+        }}
+      >
+        <Box sx={{
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%'
+        }}>          <List disablePadding>
+            {SIDEBAR_ITEMS.map(item => (
+              <ListItemButton
+                key={item.key}
+                selected={activeSection === item.key}
+                onClick={() => setActiveSection(item.key)}
+                sx={{
+                  minHeight: 44,
+                  px: 1,
+                  py: 1.5,
+                  mb: 0.25,
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  transition: 'all 0.1s ease',
+                  '&.Mui-selected': {
+                    backgroundColor: themeMode === 'dark'
+                      ? 'rgba(64, 81, 106, 0.2)'
+                      : 'rgba(25, 118, 210, 0.08)',
+                    '&:hover': {
+                      backgroundColor: themeMode === 'dark'
+                        ? 'rgba(64, 81, 106, 0.25)'
+                        : 'rgba(25, 118, 210, 0.12)'
+                    }
                   }
-                  label="Auto-minimize main window on inactivity"
-                  sx={{ fontSize: { xs: '0.85em', sm: '0.95em' }, mr: 2 }}
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 'auto',
+                    color: activeSection === item.key
+                      ? muiTheme.palette.primary.main
+                      : themeMode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.7)'
+                        : 'rgba(0, 0, 0, 0.6)',
+                    justifyContent: 'center',
+                    m: 0
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    variant: 'caption',
+                    sx: {
+                      fontSize: '0.7rem',
+                      textAlign: 'center',
+                      color: activeSection === item.key
+                        ? muiTheme.palette.primary.main
+                        : themeMode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.7)'
+                          : 'rgba(0, 0, 0, 0.6)',
+                    }
+                  }}
                 />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
+      <Box component="main" sx={{
+        flexGrow: 1,
+        p: 1,
+        mt: '36px',
+        ml: 0,
+        height: 'calc(100% - 36px)',
+        width: 'calc(100% - 80px)',
+        overflow: 'auto',
+        backgroundColor: themeMode === 'dark'
+          ? '#2a2d33'
+          : '#f8f9fa',
+        display: 'flex',
+        justifyContent: 'stretch',
+        alignItems: 'stretch'
+      }}>{activeSection === 'urls' && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 1.5,
+            width: '100%',
+            height: 'calc(100% - 16px)',
+            borderRadius: 1,
+            border: `1px solid ${themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+            boxShadow: 'none',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >            <Typography
+          variant="subtitle1"
+          sx={{
+            mb: 1.5,
+            fontWeight: 500,
+            fontSize: '14px',
+            color: themeMode === 'dark' ? '#e0e0e0' : '#424242',
+            borderBottom: `1px solid ${muiTheme.palette.divider}`,
+            pb: 0.75,
+            fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+          }}
+        >
+            API URLs Configuration
+          </Typography>              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2, width: '100%' }}>
+            <TextField
+              label="Primary API URL"
+              placeholder="Enter the main API endpoint URL"
+              value={apiUrl}
+              onChange={e => setApiUrl(e.target.value)}
+              fullWidth
+              variant="outlined"
+              size="small"
+              InputLabelProps={{
+                shrink: true,
+                sx: {
+                  fontWeight: 400,
+                  fontSize: '13px',
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+                }
+              }}
+              InputProps={{
+                sx: {
+                  borderRadius: 0.5,
+                  fontSize: '13px',
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.15)'
+                  }
+                }
+              }}
+            />              <TextField
+              label="Secondary API URL"
+              placeholder="Enter the backup API endpoint URL"
+              value={apiUrl2}
+              onChange={e => setApiUrl2(e.target.value)}
+              fullWidth
+              variant="outlined"
+              size="small"
+              InputLabelProps={{
+                shrink: true,
+                sx: {
+                  fontWeight: 400,
+                  fontSize: '13px',
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+                }
+              }}
+              InputProps={{
+                sx: {
+                  borderRadius: 0.5,
+                  fontSize: '13px',
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.15)'
+                  }
+                }
+              }} />
+          </Box>
+
+          <Box sx={{ mb: 2, width: '100%', backgroundColor: themeMode === 'dark' ? 'rgba(50, 55, 65, 0.5)' : 'rgba(240, 245, 255, 0.5)', p: 1.5, borderRadius: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                mb: 1,
+                fontWeight: 600,
+                color: muiTheme.palette.primary.main,
+                display: 'block'
+              }}
+            >
+              Useful Resources
+            </Typography>
+            <List dense sx={{ py: 0 }}>
+              <ListItem
+                disablePadding
+                sx={{
+                  py: 0.25,
+                  px: 0.5,
+                  borderRadius: 1,
+                  '&:hover': {
+                    backgroundColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 24, color: muiTheme.palette.primary.main }}>
+                  <MenuBookIcon sx={{ fontSize: 18 }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Link
+                      href="https://docs.example.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        color: themeMode === 'dark' ? '#90caf9' : '#1565c0',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      API Documentation
+                    </Link>
+                  }
+                />
+              </ListItem>
+              <ListItem
+                disablePadding
+                sx={{
+                  py: 0.25,
+                  px: 0.5,
+                  borderRadius: 1,
+                  '&:hover': {
+                    backgroundColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 24, color: muiTheme.palette.info.main }}>
+                  <InfoIcon sx={{ fontSize: 18 }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Link
+                      href="https://status.example.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        color: themeMode === 'dark' ? '#90caf9' : '#1565c0',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      API Status Page
+                    </Link>
+                  }
+                />
+                
+              </ListItem>
+              <ListItem
+                disablePadding
+                sx={{
+                  py: 0.25,
+                  px: 0.5,
+                  borderRadius: 1,
+                  '&:hover': {
+                    backgroundColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 24, color: muiTheme.palette.action.active }}>
+                  <SettingsIcon sx={{ fontSize: 18 }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Link
+                      href="https://support.example.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        color: themeMode === 'dark' ? '#90caf9' : '#1565c0',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      Support Portal
+                    </Link>
+                  }
+                />
+                
+              </ListItem>
+            </List>
+          </Box>
+          <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', width: '100%' }}>              <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            size="small"
+            sx={{
+              borderRadius: 0.5,
+              textTransform: 'none',
+              px: 2,
+              py: 0.5,
+              boxShadow: 'none',
+              fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
+              fontSize: '13px',
+              fontWeight: 400,
+              '&:hover': {
+                boxShadow: 'none'
+              }
+            }}
+          >
+            Save Changes
+          </Button>
+            {saved && (
+              <Typography
+                variant="caption"
+                sx={{
+                  ml: 1.5,
+                  color: 'success.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5
+                }}
+              >
+                ✓ Saved!
+              </Typography>
+            )}
+            {error && (
+              <Typography
+                variant="caption"
+                sx={{
+                  ml: 1.5,
+                  color: 'error.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5
+                }}
+              >
+                ⚠️ {error}
+              </Typography>
+            )}
+          </Box>
+        </Paper>)}        {activeSection === 'tool' && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 1.5,
+              width: '100%',
+              height: 'calc(100% - 16px)',
+              borderRadius: 1,
+              border: `1px solid ${themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+              boxShadow: 'none',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{
+                mb: 1.5,
+                fontWeight: 500,
+                fontSize: '14px',
+                color: themeMode === 'dark' ? '#e0e0e0' : '#424242',
+                borderBottom: `1px solid ${muiTheme.palette.divider}`,
+                pb: 0.75,
+                fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+              }}
+            >
+              Appearance
+            </Typography>
+            {/* Theme Switcher */}
+            <Box sx={{ mb: 2, mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, minWidth: 90 }}>
+                System Theme
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={themeMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 1,
+                  fontSize: '13px',
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
+                  fontWeight: 400
+                }}
+              >
+                {themeMode === 'dark' ? 'Enable Light mode' : 'Enable Dark mode'}
+              </Button>
+            </Box>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                mb: 1.5,
+                fontWeight: 500,
+                fontSize: '14px',
+                color: themeMode === 'dark' ? '#e0e0e0' : '#424242',
+                borderBottom: `1px solid ${muiTheme.palette.divider}`,
+                pb: 0.75,
+                fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+              }}
+            >
+              Tool Behavior
+            </Typography>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: themeMode === 'dark' ? 'rgba(50, 55, 65, 0.5)' : 'rgba(240, 245, 255, 0.5)',
+              p: 1.5,
+              borderRadius: 1,
+              mb: 1.5,
+              width: '100%'
+            }}>
+              {/* <Typography variant="caption" sx={{ mb: 1, fontWeight: 600, color: muiTheme.palette.primary.main, display: 'block' }}>
+                Window Management
+              </Typography> */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={toolBehavior.autoDisappear}
+                    onChange={e => handleToolBehaviorChange('autoDisappear', e.target.checked)}
+                    color="primary"
+                    size="small"
+                    sx={{
+                      padding: 0.5,
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="caption" sx={{
+                    fontWeight: toolBehavior.autoDisappear ? 500 : 400,
+                    fontSize: '13px',
+                    fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+                  }}>
+                    Auto-minimize main window on inactivity
+                  </Typography>
+                }
+                sx={{ mb: 0.5 }}
+              />
+              <Box sx={{
+                mt: 0.25,
+                ml: 2,
+                display: 'flex',
+                alignItems: 'center',
+                opacity: toolBehavior.autoDisappear ? 1 : 0.5,
+                transition: 'opacity 0.2s',
+                width: 'calc(100% - 16px)'
+              }}>
+                <Typography variant="caption" sx={{ mr: 1, minWidth: 60 }}>
+                  Timer (sec):
+                </Typography>
                 <TextField
-                  label="Seconds"
                   type="number"
                   size="small"
                   value={toolBehavior.disappearSeconds}
                   onChange={e => handleToolBehaviorChange('disappearSeconds', Math.max(1, Number(e.target.value)))}
                   disabled={!toolBehavior.autoDisappear}
-                  inputProps={{ min: 1, style: { fontSize: '0.95em', padding: 2, width: 60 } }}
-                  sx={{ ml: 1, fontSize: { xs: '0.85em', sm: '0.95em' }, width: 90 }}
+                  inputProps={{ min: 1 }}
+                  sx={{ width: 80 }}
+                  variant="outlined"
+                  InputProps={{
+                    sx: {
+                      height: 32,
+                      fontSize: '0.8rem',
+                      borderRadius: 1
+                    }
+                  }}
                 />
               </Box>
             </Box>
-          </Box>
-        )}
-        {activeSection === 'update' && (
-          <Box sx={{ width: '100%' }}>
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.95em', sm: '1em' }, mb: 1 }}>Update</Typography>
-              <Typography variant="body2" sx={{ fontSize: { xs: '0.85em', sm: '0.95em' } }}>Check for updates and manage application version here.</Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2, fontSize: { xs: '0.85em', sm: '0.95em' }, minHeight: 32, py: 0.5 }}
-                onClick={handleCheckUpdate}
-                disabled={checkingUpdate}
+            <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', width: '100%' }}>              <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                saveToolBehavior(toolBehavior);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 1200);
+              }}
+              size="small"
+              sx={{
+                borderRadius: 0.5,
+                textTransform: 'none',
+                px: 2,
+                py: 0.5,
+                boxShadow: 'none',
+                fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
+                fontSize: '13px',
+                fontWeight: 400,
+                '&:hover': {
+                  boxShadow: 'none'
+                }
+              }}
+            >
+              Apply Settings
+            </Button>
+              {saved && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    ml: 1.5,
+                    color: 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5
+                  }}
+                >
+                  ✓ Saved!
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        )}       {activeSection === 'about' && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 1.5,
+                width: '100%',
+                height: 'calc(100% - 16px)',
+                borderRadius: 1,
+                border: `1px solid ${themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                boxShadow: 'none',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  mb: 1.5,
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  color: themeMode === 'dark' ? '#e0e0e0' : '#424242',
+                  borderBottom: `1px solid ${muiTheme.palette.divider}`,
+                  pb: 0.75,
+                  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+                }}
               >
-                Check for Updates
-              </Button>
-              {updateStatus && <Typography sx={{ fontSize: { xs: '0.75em', sm: '0.85em' }, mt: 1 }}>{updateStatus}</Typography>}
-            </Box>
-          </Box>
-        )}
-        {activeSection === 'about' && (
-          <Box sx={{ width: '100%' }}>
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.95em', sm: '1em' }, mb: 1 }}>About</Typography>
-              <Typography variant="body2" sx={{ fontSize: { xs: '0.85em', sm: '0.95em' } }}>AILabelAssist v1.0.0<br/>Copyright © 2025</Typography>
-            </Box>
-          </Box>
-        )}
-      </Paper>
+                About
+              </Typography>              <Box sx={{
+                backgroundColor: themeMode === 'dark' ? 'rgba(50, 55, 65, 0.5)' : 'rgba(240, 245, 255, 0.5)',
+                p: 1.5,
+                borderRadius: 1,
+                mb: 1.5,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                
+                <MenuBookIcon sx={{ fontSize: 48, mb: 1.5, color: muiTheme.palette.primary.main }} />
+
+                <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600 }}>
+                  BBM Label Explorer
+                </Typography>
+
+                <Typography variant="caption" sx={{ mb: 2, fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif' }}>
+                  Version 1.0.0
+                </Typography>            </Box>
+
+
+              <Box sx={{ mb: 2, width: '100%', backgroundColor: themeMode === 'dark' ? 'rgba(50, 55, 65, 0.5)' : 'rgba(240, 245, 255, 0.5)', p: 1.5, borderRadius: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    mb: 1,
+                    fontWeight: 600,
+                    color: muiTheme.palette.primary.main,
+                    display: 'block'
+                  }}
+                >
+                  Support & Resources
+                </Typography>
+                <List dense sx={{ py: 0 }}>
+                  <ListItem
+                    disablePadding
+                    sx={{
+                      py: 0.25,
+                      px: 0.5,
+                      borderRadius: 1,
+                      '&:hover': {
+                        backgroundColor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'
+                      }
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 24, color: muiTheme.palette.info.main }}>
+                      <InfoIcon sx={{ fontSize: 18 }} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          style={{
+                            color: themeMode === 'dark' ? '#e0e0e0' : '#424242',
+                            fontSize: '0.8rem',
+                            fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif'
+                          }}
+                        >
+                          User Documentation
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                </List>            </Box>
+              
+            </Paper>
+          )}
+      </Box>
     </Box>
   );
 };

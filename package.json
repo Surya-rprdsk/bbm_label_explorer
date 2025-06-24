@@ -1,16 +1,19 @@
 {
-  "name": "ailabelassist",
+  "name": "bbm-label-explorer",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "prebuild": "npm run test",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "release": "tauri build",
+    "release:msi": "tauri build --bundles msi",
+    "release:msi-custom": "powershell -ExecutionPolicy Bypass -File .\\msi.ps1",
+    "sign:msi": "powershell -ExecutionPolicy Bypass -File ./sign.ps1"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,9 +21,10 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-fs": "^2.3.0",
+    "@tauri-apps/plugin-log": "^2.5.0",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-shell": "^2.2.1",
-    "@tauri-apps/plugin-updater": "^2.7.1",
     "@xenova/transformers": "^2.17.2",
     "bootstrap": "^5.3.6",
     "dictionary-en": "^4.0.0",
@@ -41,6 +45,7 @@
     "@types/react": "^18.3.21",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.4",
+    "cross-env": "^7.0.3",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",

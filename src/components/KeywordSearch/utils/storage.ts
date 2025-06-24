@@ -1,18 +1,35 @@
 import { Keyword } from './validation';
+import { config, storage, debugLog } from '../../../config';
+import { createStorageError, ErrorSeverity } from '../../../utils/errorHandling';
 
-// Constants moved from constants.ts
-const STORAGE_KEY = 'aiLabelAssistKeywords';
-const TOOL_BEHAVIOR_KEY = 'aiLabelAssistToolBehavior';
-
+/**
+ * Get stored keywords from localStorage
+ * @returns Array of keywords or null if not found
+ * @throws StorageError if there's an issue retrieving keywords
+ */
 export function getStoredKeywords(): Keyword[] | null {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : null;
+  try {
+    debugLog('Retrieving keywords from localStorage');
+    const data = localStorage.getItem(config.storage.keywordsKey);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    const errorMessage = 'Failed to retrieve keywords from localStorage';
+    console.error(`[AILabelAssist][ERROR] ${errorMessage}:`, error);
+    throw createStorageError(
+      errorMessage,
+      ErrorSeverity.ERROR,
+      error instanceof Error ? error : undefined
+    );
+  }
 }
 
 export function getToolBehaviorSettings() {
-  try {
-    const stored = localStorage.getItem(TOOL_BEHAVIOR_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return { autoDisappear: false, disappearSeconds: 3 };
+  return storage.get(config.storage.toolBehaviorKey, { 
+    autoDisappear: false, 
+    disappearSeconds: 3 
+  });
+}
+
+export function saveToolBehaviorSettings(settings: { autoDisappear: boolean, disappearSeconds: number }) {
+  return storage.set(config.storage.toolBehaviorKey, settings);
 }

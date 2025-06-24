@@ -1,28 +1,24 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ailabelassist",
-  "version": "0.1.0",
-  "identifier": "com.ailabelassist.app",
+  "productName": "BBMLabelExplorer",
+  "version": "1.0.0",
+  "identifier": "BBMLabelExplorer",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
-  },
-  "app": {
+  },  "app": {
     "windows": [
       {
         "label": "main",
-        "title": "BBM Label Assistant",
-        "maximizable": false,
-        "minimizable": false,
-        "maxWidth": 450,
-        "maxHeight": 300,
-        "minHeight": 300,
-        "minWidth": 450,
+        "title": "Search",
+        "maximizable": true,
+        "minimizable": true,
+        "minHeight": 291,
+        "minWidth": 466,
         "focus": true,
         "skipTaskbar": false,
-        "alwaysOnTop": true,
         "resizable": true,
         "visible": false,
         "decorations": false,
@@ -46,35 +42,47 @@
         "label": "settings",
         "title": "Settings",
         "url": "/settings.html",
-        "minWidth": 500,
-        "minHeight": 400,
-        "maxWidth": 500,
-        "maxHeight": 400,
+        "maximizable": false,
+        "minimizable": false,
+        "maxWidth": 460,
+        "maxHeight": 460,
+        "minHeight": 460,
+        "minWidth": 460,
+        "focus": true,
+        "skipTaskbar": false,
+        "alwaysOnTop": true,
+        "resizable": true,
         "visible": false,
-        "resizable": false,
-        "decorations": true
+        "decorations": false,
+        "transparent": true
       }
-    ],
-    "security": {
+    ],    "security": {
       "csp": null
-    }
-  },
+    }  },
   "bundle": {
+    "createUpdaterArtifacts": false,
     "active": true,
-    "targets": "all",
+    "targets": "msi",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]  },  "plugins": {
-    "updater": {
-      "pubkey": "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAs3F7qlsjtz0GnaSLYwni7CZhxvO2PutqiFIQR+oG7Z2Virhfovv7snBrHaQwUr+9jU7SUabMtrMQr6WQJ+6ZZWdTclCJRxPu7ytdNHx5idATZ7ph3KDEhNvK3e1YGyjEfsn0cBnnJtaDY6yPoohKXtQPdeTgiGMfgoOksDnMOuogfRz59LurNfqtrYaDtINjVEJB9uTge5H53rlC7t2viKKp0ICotjRvD7+vFedev3XWc+3wwrAJaB5lHQgWLQAKfBpYI1CS9C9F+1rIaoEzfpy0Mlx+/wWVheChde2wbCsyOxBV83h9zaKpwhiQ2j4r5FUgVpUrFTs93QJJuo329TOI/L1T2AHeJMw9ab4tTeuFajvfQdLtta3v/C31T7mDzIf8t5Vmau7Dq6zRZ0zxZiAZuPM5aUGFf7wK5SBq/WQl1DDnk1jY8kM+VEYeVtos4nA8soT3yX4xUYgtiCQoSqct8DKy3RUoleWAi2odvidG5PI7I2ybC61hNZpDi2ta6hhPf+QKSrWO5561H9kNXpUH0y32J6nfN6+m+8PAj7upPDfrAHcMNueNoMZUzNxSoHkWizv8U6nx9e/mSYNVn5nHtmaE0fQGR58QLZ3kLLvWWzZUchtkRN9hoipdPJHnI9SnXpjjYgMxNqiryNwpQCSFvmitClkHheX20XOokWd0nCBYQUCAwEAAQ==",      "endpoints": [
-        "https://github.com/YOUR_GITHUB_USERNAME/AILabelAssist/bbm_label_explorer/releases/latest/download/latest.json"
-      ],
-      "dialog": true,
-      "active": true
+    ],
+    "windows": {
+      "allowDowngrades": true,
+      "certificateThumbprint": null,
+      "digestAlgorithm": null,
+      "nsis": null,
+      "signCommand": null,
+      "timestampUrl": null,
+      "tsp": false,
+      "webviewInstallMode": {
+        "silent": true,
+        "type": "downloadBootstrapper"
+      },
+      "wix": {}
     }
   }
 }

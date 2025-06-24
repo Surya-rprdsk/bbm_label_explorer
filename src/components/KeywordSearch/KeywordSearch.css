@@ -1,7 +1,15 @@
 @import '../../index.css';
+
 /* Place your component-specific styles below this line */
+:root {
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+}
+
 .keyword-search-container {
   padding: 24px;
+  font-family: var(--font-primary);
 }
 
 .keyword-table {
@@ -100,6 +108,42 @@
   transition: background 0.2s, color 0.2s;
 }
 
+/* Responsive table styles */
+.table-container-responsive {
+  width: 100%;
+  overflow: auto;
+}
+
+@media (max-width: 600px) {
+  .table-cell {
+    max-width: 120px;
+  }
+}
+
+@media (min-width: 601px) {
+  .table-cell {
+    max-width: 200px;
+  }
+}
+
+/* Ensure consistent height and layout */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
 .theme-toggle-fab:hover {
   background: var(--button-hover);
 }
@@ -126,4 +170,23 @@
 }
 [data-theme="light"] .custom-app-icon {
   filter: none;
+}
+
+/* Version info styling */
+.version-info {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 8px;
+  opacity: 0.6;
+  color: var(--text-secondary-color);
+  pointer-events: none;
+}
+
+[data-theme="dark"] .version-info {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="light"] .version-info {
+  color: rgba(0, 0, 0, 0.6);
 }

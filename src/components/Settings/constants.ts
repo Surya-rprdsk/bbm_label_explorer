@@ -1,8 +1,10 @@
 import { ThemeOption, ToolBehaviorSettings } from './types';
+import { config } from '../../config';
 
-export const STORAGE_KEY = 'settings_api_url';
-export const TOOL_BEHAVIOR_KEY = 'settings_tool_behavior';
-export const THEME_KEY = 'settings_theme';
+// Re-export storage keys from config for backward compatibility
+export const STORAGE_KEY = config.storage.apiUrlKey;
+export const TOOL_BEHAVIOR_KEY = config.storage.toolBehaviorKey;
+export const THEME_KEY = config.storage.themeKey;
 
 export const defaultToolBehavior: ToolBehaviorSettings = {
   autoDisappear: false,

@@ -1,9 +1,9 @@
 [package]
-name = "ailabelassist"
-version = "0.1.0"
-description = "A Tauri App"
+name = "bbm-label-explorer"
+version = "1.0.0"
+description = "BBM Label Explorer - A tool for AUTOSAR label validation"
 authors = ["UPY1COB"]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,9 +19,11 @@ serde_json = "1"
 sysinfo = "0.35.1"
 tokio = "1.45.0"
 reqwest = "0.12.15"
+chrono = "0.4"
 futures-util = "0.3.31"
-serde_yaml = "0.9.34"
 hnsw_rs = "0.3.1"
+tauri-plugin-fs = "2"
+tauri-plugin-log = "2"
+log = "0.4"
+tauri-plugin-single-instance = "2"
 
-[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"

@@ -13,8 +13,11 @@ export interface Keyword {
   autosarClassifications?: string[];
   lifeCycleState?: string;
   state?: string;
+  useInstead?: string;
+  useInsteadAbbrName?: string;
 }
 
+import { logError, logDebug, logInfo} from '../../';
 import Fuse from 'fuse.js';
 import { getSpell } from './spell';
 import { stemmer as porterStemmer } from 'porter-stemmer';
@@ -311,6 +314,7 @@ export function isAutosarConformantLabel(label: string, data: Keyword[]): 'AUTOS
 
 // Analyze a label input and generate structured data for display
 export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step 1: Check for invalid characters in the entire label (all parts)
+    // No need to filter by state since it's now done in the backend
   const errors: string[] = [];
   //get triimming result
   const trimmedLabel = labelInput.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
@@ -328,24 +332,38 @@ export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step
     finalLabelEligibility = parts.length <= 3;
   }
   //if label starts with small letter then it is invalid
-
-  if (!finalLabelEligibility || !/^[A-Z]/.test(labelInput)) {
+  logDebug(`test executed successfully`);
+  logInfo(`test executed successfully`);
+  logError(`test executed successfully`);  if (!finalLabelEligibility || !/^[A-Z]/.test(labelInput)) {
     const msg = 'No Label';
     return {
       rows: [],
       message: msg,
       color: 'red',
-      consolidatedMessages: [{ text: msg, color: 'red' }]
+      consolidatedMessages: [{ text: msg, color: 'red' }],
+      lifeCycleState: undefined,
+      useInstead: undefined,
+      useInsteadAbbrName: undefined
     };
   }
-
   console.log(`Final LabelEligibility`, finalLabelEligibility);
   // Step 2: Split the label according to the pattern <Id>[_<pp>][<DescriptiveName>][_Ex]
   const split = splitLabel(labelInput);
   const { id, pp, keywords: labelParts, ex } = split;
 
+  // Define the type for label rows
+  interface LabelRow {
+    abbrName: string;
+    rbClassifications: string[];
+    longNameEn: string;
+    longNameDe: string;
+    domainName: string;
+    lifeCycleState: string;
+    _rbClassifications?: string | string[];
+  }
+
   // Prepare rows for display
-  const labelRows = [];
+  const labelRows: LabelRow[] = [];
   // Always add ID row - but search for it in the database first
   if (id) {
     labelRows.push({
@@ -362,17 +380,18 @@ export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step
 
   const filtered = filterData2(keywords, pp);
   // Case sensitive match
-  let kw = filtered.find(k => k.abbrName === pp);
+  let kw = filtered.find(k => 
+    k.abbrName === pp && 
+    k.rbClassifications && 
+    (k.rbClassifications.includes('Physical') || k.rbClassifications.includes('Logical'))
+  );
   if (!kw) {
     errors.push('Abbreviation of <pp> not available');
-  } else if (!kw.rbClassifications || !kw.rbClassifications.includes('Physical')) {
+  } else if (!kw.rbClassifications || !kw.rbClassifications.includes('Physical') && !kw.rbClassifications.includes('Logical')) {
     errors.push('Physical part <pp> is missing');
   }
   // Add PP row if it exists (even if invalid)
   if (pp) {
-    const filtered = filterData2(keywords, pp);
-    // Case sensitive match
-    let kw = filtered.find(k => k.abbrName === pp);
     labelRows.push({
       abbrName: kw?.abbrName ?? pp,
       rbClassifications: Array.isArray(kw?.rbClassifications) ? kw.rbClassifications : (kw?.rbClassifications ? [kw.rbClassifications as string] : ["-"]),
@@ -392,8 +411,6 @@ export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step
   const seenKeywords = new Set<string>();
   // Add pp to seen keywords if it exists
   if (pp) seenKeywords.add(pp);
-
-
     if (!descParts.length) {
       errors.push('DescriptiveName part <dd> is missing');
     } else {
@@ -479,12 +496,10 @@ export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step
       _rbClassifications: kw?.rbClassifications ?? []
     });
   }
-
   // Get unique errors and sort them by priority
   const uniqueErrors = Array.from(new Set(errors)).sort((a, b) =>
     ERROR_RANK.indexOf(a) - ERROR_RANK.indexOf(b)
   );
-
   // Create a consolidated messages array
   const consolidatedMessages: { text: string; color: string }[] = [];
   if (uniqueErrors.length > 0) {
@@ -493,12 +508,39 @@ export function getLabelRows(labelInput: string, keywords: Keyword[]) {  // Step
       color: 'red'
     });
   }
-
+  
+  // Process each row with obsolete status individually
+  labelRows.forEach(row => {
+    if (String(row.lifeCycleState || '').toLowerCase() === 'obsolete') {
+      // Find the corresponding keyword with useInstead information
+      const obsoleteKeyword = keywords.find(k => 
+        k.abbrName === row.abbrName && 
+        String(k.lifeCycleState || '').toLowerCase() === 'obsolete');
+      
+      // Add replacement info directly to the row
+      if (obsoleteKeyword) {
+        (row as any).useInstead = obsoleteKeyword.useInstead;
+        (row as any).useInsteadAbbrName = obsoleteKeyword.useInsteadAbbrName;
+      }
+    }
+  });
+  
+  // Get the first obsolete row for backward compatibility
+  const obsoleteRow = labelRows.find(row => 
+    String(row.lifeCycleState || '').toLowerCase() === 'obsolete');
+    
+  // Log for debugging
+  console.log('getLabelRows - labelRows:', labelRows);
+  console.log('getLabelRows - obsoleteRow:', obsoleteRow);
+  
   return {
     rows: labelRows,
     message: consolidatedMessages.length > 0 ? consolidatedMessages[0].text : '',
     color: consolidatedMessages.length > 0 ? consolidatedMessages[0].color : '',
-    consolidatedMessages
+    consolidatedMessages,
+    // Use the obsolete row for lifecycle information if found
+    lifeCycleState: obsoleteRow?.lifeCycleState || (labelRows.length > 0 ? labelRows[0].lifeCycleState : undefined),
+
   };
 }
 

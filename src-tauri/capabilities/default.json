@@ -2,7 +2,11 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main",
+    "settings",
+    "splashscreen"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
@@ -16,6 +20,30 @@
     "core:tray:allow-set-show-menu-on-left-click",
     "core:window:default",
     "core:window:allow-minimize",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    "fs:default",
+    "fs:allow-applocaldata-meta",
+    "fs:allow-applocaldata-meta-recursive",
+    "fs:allow-applocaldata-read",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-write",
+    "fs:allow-applocaldata-write-recursive",
+    "fs:allow-appdata-meta",
+    "fs:allow-appdata-meta-recursive",
+    "fs:allow-appdata-read",
+    "fs:allow-appdata-read-recursive",
+    "fs:allow-appdata-write",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-log-read-recursive",
+    "fs:allow-log-write-recursive",
+    "fs:allow-log-read",
+    "fs:allow-log-write",
+    "fs:allow-log-meta-recursive",
+    "fs:allow-log-meta",
+    "fs:scope-log-recursive",
+    "fs:scope-log",
+    "fs:scope-log-index",
+    "log:default",
+    "log:default"
   ]
 }

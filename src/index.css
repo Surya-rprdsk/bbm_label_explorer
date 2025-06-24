@@ -1,5 +1,10 @@
 /* Basic global styles for the app */
 :root {
+  /* Font variables */
+  --font-primary: Arial, 'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, sans-serif;
+  --font-secondary: system-ui, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+  /* Color variables */
   --background: #fff;
   --text: #222;
   --surface: #f3f3f3;
@@ -15,6 +20,13 @@
   --table-header: #f0f0f0;
   --row-valid: #d4edda;
   --row-invalid: #f8d7da;
+  
+  /* Responsive layout variables */
+  --window-width: 100vw;
+  --window-height: 100vh;
+  --table-cell-width: 20%;
+  --content-padding: 8px;
+  --font-scale: 1;
 }
 
 [data-theme="dark"] {
@@ -60,10 +72,15 @@ body, .settings-root, .MuiPaper-root {
 
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-primary);
   background: #f9f9f9;
   color: #222;
   overflow: hidden;
+}
+
+/* Apply font family to all Material UI components */
+.MuiTypography-root, .MuiButton-root, .MuiInputBase-root, .MuiMenuItem-root, .MuiListItemText-root {
+  font-family: var(--font-primary) !important;
 }
 
 #root {
@@ -165,5 +182,35 @@ body {
   flex: 1;
   min-width: 320px;
   width: 100%;
+}
+
+/* Responsive scaling */
+@media (min-width: 450px) {
+  :root {
+    --content-padding: 8px;
+    --font-scale: 1;
+  }
+}
+
+@media (min-width: 600px) {
+  :root {
+    --content-padding: 12px;
+    --font-scale: 1.1;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --content-padding: 16px;
+    --font-scale: 1.2;
+  }
+}
+
+/* Basic layout styles */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
